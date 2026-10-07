@@ -1,0 +1,99 @@
+/* ============================================
+   CareerPilot AI — Modules Preview Styles
+   ============================================ */
+
+.modules {
+  background-color: var(--bg-primary);
+}
+
+.modules-header {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto var(--space-16);
+}
+
+.modules-label {
+  display: inline-block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wider);
+  margin-bottom: var(--space-4);
+}
+
+.modules-title {
+  margin-bottom: var(--space-5);
+}
+
+.modules-description {
+  color: var(--text-secondary);
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+}
+
+.module-card {
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  transition: all var(--transition-normal);
+}
+
+.module-card:hover {
+  border-color: var(--color-primary-200);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.module-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.module-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+}
+
+[data-theme="dark"] .module-card-icon {
+  background: hsla(245, 67%, 55%, 0.12);
+  color: var(--color-primary-300);
+}
+
+.module-card-name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.module-card-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+@media (max-width: 1024px) {
+  .modules-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .modules-grid {
+    grid-template-columns: 1fr;
+  }
+}

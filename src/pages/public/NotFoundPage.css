@@ -1,0 +1,92 @@
+/* ============================================
+   CareerPilot AI — 404 Page Styles
+   ============================================ */
+
+.not-found-page {
+  min-height: calc(100vh - var(--navbar-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  background: var(--gradient-hero);
+}
+
+.not-found-content {
+  text-align: center;
+  max-width: 500px;
+}
+
+.not-found-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+.not-found-4 {
+  font-size: clamp(5rem, 12vw, 8rem);
+  font-weight: var(--font-weight-extrabold);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.not-found-0 {
+  position: relative;
+  font-size: clamp(5rem, 12vw, 8rem);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+
+.not-found-orbit {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border: 2px dashed var(--border-primary);
+  border-radius: var(--radius-full);
+  animation: spin 10s linear infinite;
+}
+
+.not-found-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.not-found-description {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--space-8);
+}
+
+.not-found-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
+.not-found-actions a,
+.not-found-actions button {
+  text-decoration: none;
+}
+
+@media (max-width: 480px) {
+  .not-found-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .not-found-actions a,
+  .not-found-actions button {
+    width: 100%;
+  }
+}

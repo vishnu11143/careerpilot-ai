@@ -1,0 +1,12 @@
+/* ============================================
+   CareerPilot AI — Master Stylesheet
+   Import order matters: reset → tokens → themes → typography → animations → components → utilities
+   ============================================ */
+
+@import './reset.css';
+@import './tokens.css';
+@import './themes.css';
+@import './typography.css';
+@import './animations.css';
+@import './components.css';
+@import './utilities.css';

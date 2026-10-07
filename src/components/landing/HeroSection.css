@@ -1,0 +1,186 @@
+/* ============================================
+   CareerPilot AI — Hero Section Styles
+   ============================================ */
+
+.hero {
+  position: relative;
+  min-height: calc(100vh - var(--navbar-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-hero);
+  padding: var(--space-20) 0;
+}
+
+/* ── Background Decorations ── */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+}
+
+.hero-orb-1 {
+  width: 500px;
+  height: 500px;
+  background: hsla(245, 80%, 60%, 0.3);
+  top: -10%;
+  right: -5%;
+  animation: floatSlow 8s ease-in-out infinite;
+}
+
+.hero-orb-2 {
+  width: 400px;
+  height: 400px;
+  background: hsla(185, 70%, 50%, 0.25);
+  bottom: -10%;
+  left: -5%;
+  animation: floatSlow 10s ease-in-out infinite reverse;
+}
+
+.hero-orb-3 {
+  width: 300px;
+  height: 300px;
+  background: hsla(260, 70%, 55%, 0.2);
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: float 7s ease-in-out infinite;
+}
+
+.hero-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border-secondary) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-secondary) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity: 0.3;
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+}
+
+/* ── Content ── */
+.hero-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-600);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border: 1px solid var(--color-primary-200);
+  margin-bottom: var(--space-8);
+}
+
+[data-theme="dark"] .hero-badge {
+  background-color: hsla(245, 67%, 55%, 0.12);
+  color: var(--color-primary-300);
+  border-color: hsla(245, 67%, 55%, 0.2);
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: var(--font-weight-extrabold);
+  line-height: 1.1;
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text-primary);
+  margin-bottom: var(--space-6);
+  max-width: 800px;
+}
+
+.hero-subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+  max-width: 600px;
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--space-10);
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-12);
+}
+
+.hero-actions a {
+  text-decoration: none;
+}
+
+/* ── Social Proof ── */
+.hero-proof {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.hero-proof-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.hero-proof-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: white;
+  border: 2px solid var(--bg-primary);
+}
+
+.hero-proof-text {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.hero-proof-text strong {
+  color: var(--text-primary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .hero {
+    padding: var(--space-12) 0;
+  }
+
+  .hero-subtitle {
+    font-size: var(--font-size-base);
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-actions a {
+    width: 100%;
+  }
+
+  .hero-proof {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+}
