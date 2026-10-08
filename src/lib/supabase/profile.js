@@ -9,43 +9,85 @@ import { supabase } from './supabase';
  * Fetch a user's profile by their auth ID.
  */
 export async function getProfile(userId) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
-  if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
-  return data;
+    if (error && error.code !== 'PGRST116') {
+      const cached = localStorage.getItem(`careerpilot_profile_${userId}`);
+      return cached ? JSON.parse(cached) : null;
+    }
+    if (data) {
+      try {
+        localStorage.setItem(`careerpilot_profile_${userId}`, JSON.stringify(data));
+      } catch {}
+      return data;
+    }
+    const cached = localStorage.getItem(`careerpilot_profile_${userId}`);
+    return cached ? JSON.parse(cached) : null;
+  } catch {
+    const cached = localStorage.getItem(`careerpilot_profile_${userId}`);
+    return cached ? JSON.parse(cached) : null;
+  }
 }
 
 /**
  * Create a new profile.
  */
 export async function createProfile(profile) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .insert(profile)
-    .select()
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert(profile)
+      .select()
+      .single();
 
-  if (error) throw error;
-  return data;
+    if (!error && data) {
+      try {
+        localStorage.setItem(`careerpilot_profile_${profile.id}`, JSON.stringify(data));
+      } catch {}
+      return data;
+    }
+    throw error;
+  } catch {
+    try {
+      localStorage.setItem(`careerpilot_profile_${profile.id}`, JSON.stringify(profile));
+    } catch {}
+    return profile;
+  }
 }
 
 /**
  * Update an existing profile.
  */
 export async function updateProfile(userId, updates) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .update(updates)
-    .eq('id', userId)
-    .select()
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId)
+      .select()
+      .single();
 
-  if (error) throw error;
-  return data;
+    if (!error && data) {
+      try {
+        localStorage.setItem(`careerpilot_profile_${userId}`, JSON.stringify(data));
+      } catch {}
+      return data;
+    }
+    throw error;
+  } catch {
+    const cached = localStorage.getItem(`careerpilot_profile_${userId}`);
+    const existing = cached ? JSON.parse(cached) : { id: userId };
+    const merged = { ...existing, ...updates, updated_at: new Date().toISOString() };
+    try {
+      localStorage.setItem(`careerpilot_profile_${userId}`, JSON.stringify(merged));
+    } catch {}
+    return merged;
+  }
 }
 
 /* ── Phase 3: Profile Completeness ── */

@@ -43,7 +43,7 @@ export async function verifyPhase2() {
   console.log('── Environment Variables ──');
 
   const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
-  const supabaseKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
+  const supabaseKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '').trim();
   const appEnv = import.meta.env.VITE_APP_ENV;
 
   log('VITE_SUPABASE_URL', supabaseUrl ? 'PASS' : 'FAIL', supabaseUrl || 'NOT SET');

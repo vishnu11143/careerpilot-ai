@@ -125,7 +125,11 @@ export function Sidebar() {
         {!isCollapsed ? (
           <div className="sidebar-user-section">
             <div className="sidebar-user-info">
-              <Avatar name={displayName} size="sm" />
+              <Avatar
+                name={displayName}
+                size="sm"
+                src={profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture}
+              />
               <div className="sidebar-user-text">
                 <span className="sidebar-user-name">{displayName}</span>
                 <span className="sidebar-user-email">{displayEmail}</span>

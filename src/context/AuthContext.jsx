@@ -28,10 +28,29 @@ export function AuthProvider({ children }) {
 
   /**
    * Fetch the user's profile from the profiles table.
+   * If no profile row exists, synthesizes one using auth user metadata.
    */
-  const fetchProfile = useCallback(async (userId) => {
+  const fetchProfile = useCallback(async (userId, authUser = null) => {
     try {
-      const data = await profileService.getProfile(userId);
+      let data = await profileService.getProfile(userId);
+      if (!data && authUser) {
+        const initialProfile = {
+          id: userId,
+          email: authUser.email || '',
+          full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || '',
+          avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || '',
+          headline: '',
+          bio: '',
+          location: '',
+          current_role: '',
+          target_role: '',
+          skills: [],
+          education: [],
+          onboarding_completed: false,
+          profile_completeness: 10,
+        };
+        data = await profileService.createProfile(initialProfile);
+      }
       setProfile(data);
       return data;
     } catch (err) {
@@ -69,7 +88,7 @@ export function AuthProvider({ children }) {
           if (currentSession?.user) {
             setSession(currentSession);
             setUser(currentSession.user);
-            await fetchProfile(currentSession.user.id);
+            await fetchProfile(currentSession.user.id, currentSession.user);
           } else {
             // Check for persistent demo session
             const savedDemo = localStorage.getItem('careerpilot_demo_session');
@@ -129,7 +148,7 @@ export function AuthProvider({ children }) {
             if (event === 'SIGNED_IN') {
               setTimeout(async () => {
                 if (mounted) {
-                  fetchProfile(newSession.user.id);
+                  fetchProfile(newSession.user.id, newSession.user);
 
                   // Phase 3: Log login activity
                   logActivity({
@@ -141,7 +160,7 @@ export function AuthProvider({ children }) {
                 }
               }, 500);
             } else {
-              fetchProfile(newSession.user.id);
+              fetchProfile(newSession.user.id, newSession.user);
             }
           } else {
             setProfile(null);
@@ -249,7 +268,7 @@ export function AuthProvider({ children }) {
 
   const refreshProfile = useCallback(async () => {
     if (user) {
-      return await fetchProfile(user.id);
+      return await fetchProfile(user.id, user);
     }
     return null;
   }, [user, fetchProfile]);

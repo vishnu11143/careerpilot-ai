@@ -8,27 +8,22 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const rawUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
-const rawKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
+const supabasePublishableKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '').trim();
 
 // Detect placeholder / unconfigured values
 const isUrlConfigured =
-  rawUrl &&
-  rawUrl !== 'YOUR_SUPABASE_PROJECT_URL' &&
-  rawUrl !== 'https://your-project-id.supabase.co' &&
-  rawUrl.startsWith('https://');
+  supabaseUrl.startsWith('https://') &&
+  supabaseUrl !== 'https://your-project-id.supabase.co';
 
 const isKeyConfigured =
-  rawKey &&
-  rawKey !== 'YOUR_SUPABASE_PUBLISHABLE_KEY' &&
-  rawKey !== 'your-publishable-key-here' &&
-  rawKey !== 'YOUR_SUPABASE_ANON_KEY' &&
-  rawKey !== 'your-anon-key-here' &&
-  rawKey !== '<the publishable key I provide>' &&
-  rawKey.length > 20;
+  supabasePublishableKey.length > 20 &&
+  supabasePublishableKey !== 'your-publishable-key-here';
 
-// Extra check: check format for either new sb_publishable_ key or classic JWT
-const isKeyValidFormat = rawKey.startsWith('sb_publishable_') || rawKey.startsWith('eyJ');
+// Check format for either new sb_publishable_ key or classic JWT
+const isKeyValidFormat =
+  supabasePublishableKey.startsWith('sb_publishable_') ||
+  supabasePublishableKey.startsWith('eyJ');
 
 if (!isUrlConfigured) {
   console.warn(
@@ -52,13 +47,11 @@ if (!isKeyConfigured) {
   );
 }
 
-// Always use a structurally valid URL so createClient doesn't throw.
-// Auth operations will fail gracefully at the network layer if credentials
-// are not real.
-const supabaseUrl = isUrlConfigured ? rawUrl : 'https://placeholder.supabase.co';
-const supabasePublishableKey = isKeyConfigured ? rawKey : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder';
+// Always use a structurally valid URL so createClient doesn't throw if env is missing.
+const effectiveUrl = isUrlConfigured ? supabaseUrl : 'https://placeholder.supabase.co';
+const effectiveKey = isKeyConfigured ? supabasePublishableKey : 'placeholder-key';
 
-export const supabase = createClient(supabaseUrl, supabasePublishableKey, {
+export const supabase = createClient(effectiveUrl, effectiveKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -80,20 +73,18 @@ export async function testConnection() {
 
   const start = performance.now();
   try {
-    // Use the REST health endpoint — lightest possible call
-    const response = await fetch(`${supabaseUrl}/rest/v1/`, {
-      method: 'HEAD',
+    // Use the Auth service health endpoint
+    const response = await fetch(`${supabaseUrl}/auth/v1/health`, {
+      method: 'GET',
       headers: {
         'apikey': supabasePublishableKey,
-        'Authorization': `Bearer ${supabasePublishableKey}`,
       },
       signal: AbortSignal.timeout(8000),
     });
 
     const latencyMs = Math.round(performance.now() - start);
 
-    if (response.ok || response.status === 200 || response.status === 404) {
-      // 404 is fine — it means the server responded (no default table)
+    if (response.ok || response.status === 200) {
       return { ok: true, latencyMs };
     }
 

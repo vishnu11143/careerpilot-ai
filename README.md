@@ -22,7 +22,7 @@
 - **📊 Technical Skill Gap Matrix**: Radar charts and proficiency comparisons between current competencies and target role expectations.
 - **💼 Internship & Job Opportunity Radar**: Curated opportunities categorized by match percentage, remote availability, and skill alignment.
 - **🐙 GitHub Profile & Repository Analyzer**: Automated scan of repository architecture, commit consistency, and portfolio presentation.
-- **🔐 Enterprise Authentication**: Supabase-powered authentication with email/password signup, login, session persistence, and instant demo bypass.
+- **🔐 Enterprise Authentication**: Supabase-powered authentication with Google OAuth, email/password signup, login, session persistence, and instant demo bypass.
 
 ---
 
@@ -119,10 +119,10 @@ node index.js
 **Terminal 2 — Frontend Application:**
 ```bash
 npm run dev
-# Frontend starts at http://localhost:5173
+# Frontend starts at http://localhost:3000
 ```
 
-Open `http://localhost:5173` in your browser.
+Open `http://localhost:3000` in your browser.
 
 ---
 

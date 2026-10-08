@@ -56,6 +56,8 @@ export default function SignUpPage() {
       const message = err.message || 'Sign up failed. Please try again.';
       if (message.includes('already registered') || message.includes('already been registered')) {
         setApiError('An account with this email already exists. Please sign in instead.');
+      } else if (message.includes('rate limit') || err?.code === 'over_email_send_rate_limit') {
+        setApiError('Email rate limit reached for this Supabase project. Please wait a few minutes before requesting another verification email, or use the 1-Click Demo account below.');
       } else {
         setApiError(message);
       }
