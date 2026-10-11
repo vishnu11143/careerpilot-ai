@@ -19,6 +19,35 @@ export const AuthContext = createContext(null);
 /** Maximum time to wait for initial session check before giving up */
 const SESSION_INIT_TIMEOUT_MS = 10000;
 
+const DEMO_USER = {
+  id: 'demo-user-12345',
+  email: 'alex.chen@careerpilot.ai',
+  user_metadata: { full_name: 'Alex Chen' },
+  created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+  app_metadata: { provider: 'demo' },
+};
+
+const DEMO_PROFILE = {
+  id: 'demo-user-12345',
+  full_name: 'Alex Chen',
+  headline: 'Full-Stack Software Engineer & AI Systems Developer',
+  bio: 'Building scalable distributed systems and exploring modern frontend architectures. Passionate about AI-assisted engineering and cloud computing.',
+  location: 'San Francisco, CA',
+  phone: '+1 (555) 234-5678',
+  website: 'https://alexchen.dev',
+  linkedin_url: 'https://linkedin.com/in/alexchen-dev',
+  github_url: 'https://github.com/octocat',
+  current_role: 'Full-Stack Software Engineer',
+  target_role: 'Senior Software Engineer / Tech Lead',
+  experience_level: 'mid',
+  industry: 'Technology',
+  skills: ['React', 'TypeScript', 'Node.js', 'Python', 'TailwindCSS', 'PostgreSQL', 'Docker', 'GraphQL', 'AWS', 'Next.js'],
+  education: [{ institution: 'UC Berkeley', degree: 'B.S. in Computer Science', year: '2023' }],
+  career_goals: 'Advance to Senior SWE and architect high-throughput distributed microservices for tier-1 tech products.',
+  onboarding_completed: true,
+  profile_completeness: 100,
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
@@ -181,7 +210,7 @@ export function AuthProvider({ children }) {
       clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
-  }, [fetchProfile]);
+  }, [fetchProfile, setLoadingState]);
 
   /* ── Auth Actions ── */
 
@@ -194,35 +223,6 @@ export function AuthProvider({ children }) {
     const data = await authService.signUp({ email, password, fullName });
     return data;
   }, []);
-
-  const DEMO_USER = {
-    id: 'demo-user-12345',
-    email: 'alex.chen@careerpilot.ai',
-    user_metadata: { full_name: 'Alex Chen' },
-    created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    app_metadata: { provider: 'demo' },
-  };
-
-  const DEMO_PROFILE = {
-    id: 'demo-user-12345',
-    full_name: 'Alex Chen',
-    headline: 'Full-Stack Software Engineer & AI Systems Developer',
-    bio: 'Building scalable distributed systems and exploring modern frontend architectures. Passionate about AI-assisted engineering and cloud computing.',
-    location: 'San Francisco, CA',
-    phone: '+1 (555) 234-5678',
-    website: 'https://alexchen.dev',
-    linkedin_url: 'https://linkedin.com/in/alexchen-dev',
-    github_url: 'https://github.com/octocat',
-    current_role: 'Full-Stack Software Engineer',
-    target_role: 'Senior Software Engineer / Tech Lead',
-    experience_level: 'mid',
-    industry: 'Technology',
-    skills: ['React', 'TypeScript', 'Node.js', 'Python', 'TailwindCSS', 'PostgreSQL', 'Docker', 'GraphQL', 'AWS', 'Next.js'],
-    education: [{ institution: 'UC Berkeley', degree: 'B.S. in Computer Science', year: '2023' }],
-    career_goals: 'Advance to Senior SWE and architect high-throughput distributed microservices for tier-1 tech products.',
-    onboarding_completed: true,
-    profile_completeness: 100,
-  };
 
   const loginAsDemo = useCallback(() => {
     setUser(DEMO_USER);

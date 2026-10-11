@@ -11,7 +11,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/+$/, ''
 async function request(endpoint, options = {}) {
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const url = `${API_BASE_URL}${cleanEndpoint}`;
-  const timeoutMs = options.timeoutMs || 25000;
+  const timeoutMs = options.timeoutMs || 45000;
 
   const headers = {
     'Content-Type': 'application/json',

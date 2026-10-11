@@ -17,16 +17,17 @@ function getApiKey() {
 }
 
 function getConfiguredModel() {
-  return process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  return process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
 }
 
-// Fallback models in order of preference if primary experiences high demand / 503
+// Fallback models in order of preference if primary experiences high demand / 503 / 429
 const FALLBACK_MODELS = [
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
+  'gemini-3.6-flash',
   'gemini-3.8-flash',
   'gemini-3.7-flash',
-  'gemini-3.5-flash',
   'gemini-flash-latest',
-  'gemma-4-26b-a4b-it',
 ];
 
 let aiClient = null;
@@ -45,7 +46,7 @@ function getClient() {
 /**
  * Execute a generation call to Gemini with timeout, model retry, and structured parsing.
  */
-export async function generateContent({ prompt, systemInstruction = '', model = null, timeoutMs = 25000 }) {
+export async function generateContent({ prompt, systemInstruction = '', model = null, timeoutMs = 20000 }) {
   const primaryModel = model || getConfiguredModel();
   const client = getClient();
   const modelsToTry = [primaryModel, ...FALLBACK_MODELS.filter(m => m !== primaryModel)];
@@ -89,6 +90,12 @@ export async function generateContent({ prompt, systemInstruction = '', model = 
  * Safe JSON extractor helper
  */
 function extractJSON(text) {
+  if (!text) return null;
+  try {
+    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+    return JSON.parse(cleaned);
+  } catch {}
+
   try {
     const jsonMatch = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
     if (jsonMatch) {

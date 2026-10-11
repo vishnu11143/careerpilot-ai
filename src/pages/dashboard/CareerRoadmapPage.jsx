@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Card, Button, Badge, ProgressRing } from '../../components/ui';
 import { generateRoadmapAI, hasGeminiApiKey } from '../../services/aiService';
+import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
 import './DashboardPages.css';
 
@@ -55,19 +56,29 @@ const DEFAULT_ROADMAP = {
 };
 
 export default function CareerRoadmapPage() {
+  const { profile } = useAuth();
+  const storageKey = profile?.id ? `careerpilot_roadmap_${profile.id}` : 'careerpilot_active_roadmap';
+
   const [roadmap, setRoadmap] = useState(() => {
-    const saved = localStorage.getItem('careerpilot_active_roadmap');
-    return saved ? JSON.parse(saved) : DEFAULT_ROADMAP;
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return DEFAULT_ROADMAP;
   });
 
-  const [currentRoleInput, setCurrentRoleInput] = useState('Full Stack Engineer');
-  const [targetRoleInput, setTargetRoleInput] = useState('Senior Tech Lead');
+  const [currentRoleInput, setCurrentRoleInput] = useState(profile?.current_role || 'Full Stack Engineer');
+  const [targetRoleInput, setTargetRoleInput] = useState(profile?.target_role || 'Senior Tech Lead');
   const [timeframe, setTimeframe] = useState(12);
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('careerpilot_active_roadmap', JSON.stringify(roadmap));
-  }, [roadmap]);
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(roadmap));
+    } catch (e) {
+      console.warn('Failed to save roadmap:', e);
+    }
+  }, [storageKey, roadmap]);
 
   // Compute completion stats
   const allMilestones = roadmap.phases.flatMap(p => p.milestones);

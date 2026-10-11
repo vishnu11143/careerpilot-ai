@@ -4,23 +4,27 @@
    repositories, calculates language breakdown & recruiter score.
    ============================================ */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Code2, Search, Star, GitFork, BookOpen,
   AlertCircle, ExternalLink
 } from 'lucide-react';
 import { Card, Button, Badge, ProgressRing } from '../../components/ui';
+import { useAuth } from '../../hooks/useAuth';
 import './DashboardPages.css';
 
 export default function GitHubPage() {
-  const [username, setUsername] = useState('octocat');
+  const { profile } = useAuth();
+  const defaultUsername = profile?.github_url ? profile.github_url.replace(/.*github\.com\//i, '').replace(/\/.*$/, '') : 'octocat';
+
+  const [username, setUsername] = useState(defaultUsername || 'octocat');
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState(null);
   const [repos, setRepos] = useState([]);
   const [error, setError] = useState('');
   const [languages, setLanguages] = useState({});
 
-  const fetchGitHubData = async (userToFetch) => {
+  const fetchGitHubData = useCallback(async (userToFetch) => {
     const target = userToFetch || username;
     if (!target.trim()) return;
 
@@ -59,11 +63,11 @@ export default function GitHubPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [username]);
 
   useEffect(() => {
-    fetchGitHubData('octocat');
-  }, []);
+    fetchGitHubData(defaultUsername || 'octocat');
+  }, [fetchGitHubData, defaultUsername]);
 
   const totalLangCount = Object.values(languages).reduce((a, b) => a + b, 0);
 

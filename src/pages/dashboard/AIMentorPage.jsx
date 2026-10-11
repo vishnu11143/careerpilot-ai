@@ -4,7 +4,7 @@
    integration, memory, and actionable prompt pills.
    ============================================ */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Bot, Send, User, Trash2, Copy, Check
 } from 'lucide-react';
@@ -72,9 +72,15 @@ export default function AIMentorPage() {
   const [copiedId, setCopiedId] = useState(null);
   const messagesEndRef = useRef(null);
 
+  const getStorageKey = useCallback((personaId) => {
+    return profile?.id
+      ? `careerpilot_mentor_${profile.id}_${personaId}`
+      : `careerpilot_mentor_chat_${personaId}`;
+  }, [profile?.id]);
+
   // Initialize or load conversation for current persona
   useEffect(() => {
-    const storageKey = `careerpilot_mentor_chat_${selectedPersona.id}`;
+    const storageKey = getStorageKey(selectedPersona.id);
     const saved = localStorage.getItem(storageKey);
     if (saved) {
       try {
@@ -93,15 +99,15 @@ export default function AIMentorPage() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }
     ]);
-  }, [selectedPersona]);
+  }, [selectedPersona, getStorageKey]);
 
   // Save conversation to localStorage
   useEffect(() => {
     if (messages.length > 0) {
-      const storageKey = `careerpilot_mentor_chat_${selectedPersona.id}`;
+      const storageKey = getStorageKey(selectedPersona.id);
       localStorage.setItem(storageKey, JSON.stringify(messages));
     }
-  }, [messages, selectedPersona]);
+  }, [messages, selectedPersona, getStorageKey]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -155,7 +161,7 @@ export default function AIMentorPage() {
   };
 
   const clearChat = () => {
-    const storageKey = `careerpilot_mentor_chat_${selectedPersona.id}`;
+    const storageKey = getStorageKey(selectedPersona.id);
     localStorage.removeItem(storageKey);
     setMessages([
       {

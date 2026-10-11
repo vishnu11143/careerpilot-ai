@@ -6,10 +6,10 @@
 
 import { useState } from 'react';
 import {
-  Building2, Search, ExternalLink, Star, DollarSign,
-  Layers, Users, Shield, ArrowRight, CheckCircle, Plus
+  Building2, Search, Star, Layers, CheckCircle, Plus
 } from 'lucide-react';
 import { Card, Button, Badge, Dialog } from '../../components/ui';
+import { useAuth } from '../../hooks/useAuth';
 import './DashboardPages.css';
 
 const COMPANIES_DATABASE = [
@@ -151,6 +151,8 @@ const COMPANIES_DATABASE = [
 ];
 
 export default function CompanyIntelligencePage() {
+  const { profile } = useAuth();
+  const storageKey = profile?.id ? `careerpilot_applications_${profile.id}` : 'careerpilot_applications';
   const [search, setSearch] = useState('');
   const [selectedTier, setSelectedTier] = useState('All');
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -167,7 +169,7 @@ export default function CompanyIntelligencePage() {
 
   const addToTracker = (comp) => {
     try {
-      const saved = localStorage.getItem('careerpilot_applications');
+      const saved = localStorage.getItem(storageKey);
       const apps = saved ? JSON.parse(saved) : [];
       const newApp = {
         id: `app-${Date.now()}`,
@@ -180,7 +182,7 @@ export default function CompanyIntelligencePage() {
         notes: `Researched via Company Intelligence. Stack: ${comp.techStack.slice(0, 4).join(', ')}.`,
         url: `https://${comp.name.toLowerCase()}.com`
       };
-      localStorage.setItem('careerpilot_applications', JSON.stringify([newApp, ...apps]));
+      localStorage.setItem(storageKey, JSON.stringify([newApp, ...apps]));
       setAddedSuccess(`Added ${comp.name} to your Internship/Job Tracker!`);
       setTimeout(() => setAddedSuccess(''), 3000);
     } catch (err) {

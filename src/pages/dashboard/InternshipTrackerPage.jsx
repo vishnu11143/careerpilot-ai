@@ -10,6 +10,7 @@ import {
   MapPin, DollarSign, Trash2, Download
 } from 'lucide-react';
 import { Card, Button, Badge, Dialog } from '../../components/ui';
+import { useAuth } from '../../hooks/useAuth';
 import './DashboardPages.css';
 
 const STAGES = [
@@ -68,9 +69,15 @@ const DEFAULT_APPLICATIONS = [
 ];
 
 export default function InternshipTrackerPage() {
+  const { profile } = useAuth();
+  const storageKey = profile?.id ? `careerpilot_applications_${profile.id}` : 'careerpilot_applications';
+
   const [apps, setApps] = useState(() => {
-    const saved = localStorage.getItem('careerpilot_applications');
-    return saved ? JSON.parse(saved) : DEFAULT_APPLICATIONS;
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return DEFAULT_APPLICATIONS;
   });
 
   const [viewMode, setViewMode] = useState('kanban'); // 'kanban' or 'list'
@@ -87,8 +94,12 @@ export default function InternshipTrackerPage() {
   const [formUrl, setFormUrl] = useState('');
 
   useEffect(() => {
-    localStorage.setItem('careerpilot_applications', JSON.stringify(apps));
-  }, [apps]);
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(apps));
+    } catch (e) {
+      console.warn('Failed to save applications:', e);
+    }
+  }, [storageKey, apps]);
 
   // KPIs
   const totalApps = apps.length;

@@ -25,8 +25,9 @@ app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
-    if (req.path.startsWith('/api')) {
-      console.log(`[API] ${req.method} ${req.path} -> ${res.statusCode} (${duration}ms)`);
+    const url = req.originalUrl || req.url;
+    if (url.startsWith('/api')) {
+      console.log(`[API] ${req.method} ${url} -> ${res.statusCode} (${duration}ms)`);
     }
   });
   next();

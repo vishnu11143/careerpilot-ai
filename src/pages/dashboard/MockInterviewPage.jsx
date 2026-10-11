@@ -8,10 +8,11 @@ import { useState, useEffect } from 'react';
 import {
   MessageSquare, Play, RotateCcw, CheckCircle,
   HelpCircle, Clock, AlertCircle,
-  Award, Sparkles, ArrowRight
+  Award, Sparkles, ArrowRight, History, Trash2
 } from 'lucide-react';
 import { Card, Button, Badge, ProgressRing } from '../../components/ui';
 import { generateInterviewQuestionsAI, evaluateInterviewAnswerAI, hasGeminiApiKey } from '../../services/aiService';
+import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
 import './DashboardPages.css';
 
@@ -20,7 +21,10 @@ const DIFFICULTIES = ['Junior', 'Mid-Level', 'Senior', 'Staff / Lead'];
 const TOPICS = ['Technical Architecture', 'Core Principles & Best Practices', 'Behavioral (STAR)', 'Web Performance'];
 
 export default function MockInterviewPage() {
-  const [selectedRole, setSelectedRole] = useState('Full Stack Engineer');
+  const { profile } = useAuth();
+  const storageKey = profile?.id ? `careerpilot_interviews_${profile.id}` : 'careerpilot_interview_history';
+
+  const [selectedRole, setSelectedRole] = useState(profile?.target_role || 'Full Stack Engineer');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Senior');
   const [selectedTopic, setSelectedTopic] = useState('Technical Architecture');
 
@@ -37,6 +41,23 @@ export default function MockInterviewPage() {
   const [evaluating, setEvaluating] = useState(false);
   const [currentEvaluation, setCurrentEvaluation] = useState(null);
 
+  // Persisted interview history
+  const [interviewHistory, setInterviewHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(interviewHistory));
+    } catch (e) {
+      console.warn('Failed to save interview history:', e);
+    }
+  }, [storageKey, interviewHistory]);
+
   // Timer effect
   useEffect(() => {
     let interval = null;
@@ -52,14 +73,19 @@ export default function MockInterviewPage() {
     setEvaluating(true);
     try {
       const qList = await generateInterviewQuestionsAI(selectedRole, selectedTopic, selectedDifficulty);
-      setQuestions(qList);
-      setCurrentIndex(0);
-      setUserAnswer('');
-      setCurrentEvaluation(null);
-      setShowHint(false);
-      setSecondsElapsed(0);
-      setTimerRunning(true);
-      setInSession(true);
+      if (Array.isArray(qList) && qList.length > 0) {
+        setQuestions(qList);
+        setCurrentIndex(0);
+        setUserAnswer('');
+        setCurrentEvaluation(null);
+        setShowHint(false);
+        setSecondsElapsed(0);
+        setTimerRunning(true);
+        setInSession(true);
+        toast.success(`Generated ${qList.length} interview questions with Gemini!`);
+      } else {
+        throw new Error('No interview questions returned.');
+      }
     } catch (err) {
       console.error('Failed to start interview:', err);
       toast.error(err.message || 'Failed to generate interview questions.');
@@ -69,13 +95,30 @@ export default function MockInterviewPage() {
   };
 
   const handleEvaluate = async () => {
-    if (!userAnswer.trim()) return;
+    if (!userAnswer.trim()) {
+      toast.error('Please type an answer to evaluate.');
+      return;
+    }
     setTimerRunning(false);
     setEvaluating(true);
     try {
       const currentQ = questions[currentIndex];
       const evalResult = await evaluateInterviewAnswerAI(currentQ.question, userAnswer, selectedRole);
       setCurrentEvaluation(evalResult);
+
+      // Save to persisted history
+      const historyEntry = {
+        id: `eval-${Date.now()}`,
+        role: selectedRole,
+        topic: selectedTopic,
+        difficulty: selectedDifficulty,
+        question: currentQ.question,
+        userAnswer,
+        evaluation: evalResult,
+        timestamp: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      };
+      setInterviewHistory((prev) => [historyEntry, ...prev.slice(0, 19)]);
+      toast.success('Answer evaluated successfully!');
     } catch (err) {
       console.error('Evaluation failed:', err);
       toast.error(err.message || 'Failed to evaluate interview answer.');
@@ -96,7 +139,13 @@ export default function MockInterviewPage() {
       // Finished all questions
       setInSession(false);
       setTimerRunning(false);
+      toast.success('Interview session completed!');
     }
+  };
+
+  const clearHistory = () => {
+    setInterviewHistory([]);
+    toast.success('Interview history cleared.');
   };
 
   const formatTimer = (sec) => {
@@ -121,12 +170,12 @@ export default function MockInterviewPage() {
           </p>
         </div>
         <Badge variant={hasGeminiApiKey() ? 'success' : 'primary'}>
-          {hasGeminiApiKey() ? '⚡ Gemini 1.5 Active' : '✨ Built-in Interview Engine'}
+          {hasGeminiApiKey() ? '⚡ Gemini Live AI' : '✨ Built-in Interview Engine'}
         </Badge>
       </div>
 
       {!inSession ? (
-        /* Configuration Setup */
+        /* Configuration Setup & Past History */
         <div style={{ maxWidth: '840px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <Card style={{ padding: '2rem' }}>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -224,9 +273,46 @@ export default function MockInterviewPage() {
               icon={<Play size={18} />}
               style={{ backgroundColor: 'hsl(152, 68%, 40%)', borderColor: 'hsl(152, 68%, 40%)' }}
             >
-              Start Practice Session (4 Questions)
+              Start Practice Session (4 Real AI Questions)
             </Button>
           </Card>
+
+          {/* Past Practice Sessions History */}
+          {interviewHistory.length > 0 && (
+            <Card style={{ padding: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <History size={18} style={{ color: 'hsl(152, 68%, 40%)' }} />
+                  Past Practice Answers ({interviewHistory.length})
+                </h3>
+                <Button variant="ghost" size="sm" onClick={clearHistory} icon={<Trash2 size={14} />}>
+                  Clear History
+                </Button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+                {interviewHistory.map((item) => (
+                  <div key={item.id} style={{ padding: '1rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-primary)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Badge variant="primary" size="sm">{item.role}</Badge>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>{item.timestamp}</span>
+                      </div>
+                      <Badge variant={(item.evaluation?.overallScore || 0) >= 8 ? 'success' : 'warning'}>
+                        Score: {item.evaluation?.overallScore}/10
+                      </Badge>
+                    </div>
+                    <p style={{ margin: '0.25rem 0 0.5rem 0', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                      Q: {item.question}
+                    </p>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                      Feedback: {item.evaluation?.summary}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
         </div>
       ) : (
         /* Active Interview Simulator */
@@ -346,7 +432,7 @@ export default function MockInterviewPage() {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                       <ProgressRing
-                        value={currentEvaluation.overallScore * 10}
+                        value={(currentEvaluation.overallScore || 0) * 10}
                         size={72}
                         strokeWidth={6}
                         color="hsl(152, 68%, 40%)"
@@ -354,12 +440,12 @@ export default function MockInterviewPage() {
                       <div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>SCORE</div>
                         <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                          {currentEvaluation.overallScore} / 10
+                          {currentEvaluation.overallScore || 0} / 10
                         </div>
                       </div>
                     </div>
-                    <Badge variant={currentEvaluation.overallScore >= 8 ? 'success' : currentEvaluation.overallScore >= 6 ? 'warning' : 'error'}>
-                      {currentEvaluation.overallScore >= 8 ? 'Strong Hire' : currentEvaluation.overallScore >= 6 ? 'Lean Hire' : 'Needs Practice'}
+                    <Badge variant={(currentEvaluation.overallScore || 0) >= 8 ? 'success' : (currentEvaluation.overallScore || 0) >= 6 ? 'warning' : 'error'}>
+                      {(currentEvaluation.overallScore || 0) >= 8 ? 'Strong Hire' : (currentEvaluation.overallScore || 0) >= 6 ? 'Lean Hire' : 'Needs Practice'}
                     </Badge>
                   </div>
 
@@ -370,9 +456,9 @@ export default function MockInterviewPage() {
                   {/* Dimension bars */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', borderTop: '1px solid var(--border-primary)', paddingTop: '0.75rem' }}>
                     {[
-                      { label: 'Technical Accuracy & Depth', score: currentEvaluation.technicalScore },
-                      { label: 'Communication Clarity', score: currentEvaluation.communicationScore },
-                      { label: 'STAR Structure / Results', score: currentEvaluation.starMethodScore },
+                      { label: 'Technical Accuracy & Depth', score: currentEvaluation.technicalScore ?? 7 },
+                      { label: 'Communication Clarity', score: currentEvaluation.communicationScore ?? 7 },
+                      { label: 'STAR Structure / Results', score: currentEvaluation.starMethodScore ?? 6 },
                     ].map((m) => (
                       <div key={m.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
                         <span style={{ color: 'var(--text-secondary)' }}>{m.label}</span>
@@ -384,39 +470,45 @@ export default function MockInterviewPage() {
 
                 {/* Strengths & Improvements */}
                 <Card style={{ padding: '1.25rem' }}>
-                  <div style={{ marginBottom: '1rem' }}>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-success)', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      <CheckCircle size={14} /> Notable Strengths
+                  {Array.isArray(currentEvaluation.strengths) && currentEvaluation.strengths.length > 0 && (
+                    <div style={{ marginBottom: '1rem' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-success)', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <CheckCircle size={14} /> Notable Strengths
+                      </div>
+                      <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.825rem', color: 'var(--text-secondary)' }}>
+                        {currentEvaluation.strengths.map((s, idx) => (
+                          <li key={idx}>{s}</li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.825rem', color: 'var(--text-secondary)' }}>
-                      {currentEvaluation.strengths.map((s, idx) => (
-                        <li key={idx}>{s}</li>
-                      ))}
-                    </ul>
-                  </div>
+                  )}
 
-                  <div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'hsl(38, 92%, 50%)', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      <AlertCircle size={14} /> Areas for Improvement
+                  {Array.isArray(currentEvaluation.improvements) && currentEvaluation.improvements.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'hsl(38, 92%, 50%)', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <AlertCircle size={14} /> Areas for Improvement
+                      </div>
+                      <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.825rem', color: 'var(--text-secondary)' }}>
+                        {currentEvaluation.improvements.map((imp, idx) => (
+                          <li key={idx}>{imp}</li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.825rem', color: 'var(--text-secondary)' }}>
-                      {currentEvaluation.improvements.map((imp, idx) => (
-                        <li key={idx}>{imp}</li>
-                      ))}
-                    </ul>
-                  </div>
+                  )}
                 </Card>
 
                 {/* Model Ideal Answer */}
-                <Card style={{ padding: '1.25rem', background: 'var(--bg-secondary)' }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <Award size={15} style={{ color: 'var(--color-primary)' }} />
-                    Model Benchmark Answer
-                  </div>
-                  <p style={{ margin: 0, fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.5, fontStyle: 'italic' }}>
-                    {currentEvaluation.idealAnswer}
-                  </p>
-                </Card>
+                {currentEvaluation.idealAnswer && (
+                  <Card style={{ padding: '1.25rem', background: 'var(--bg-secondary)' }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Award size={15} style={{ color: 'var(--color-primary)' }} />
+                      Model Benchmark Answer
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.5, fontStyle: 'italic' }}>
+                      {currentEvaluation.idealAnswer}
+                    </p>
+                  </Card>
+                )}
 
                 {/* Next button */}
                 <Button
