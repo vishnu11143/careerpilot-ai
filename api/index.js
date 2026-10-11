@@ -32,7 +32,7 @@ const handleHealth = (req, res) => {
     service: 'CareerPilot AI API (Vercel Serverless)',
     version: '1.0.0',
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
-    geminiModel: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+    geminiModel: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
     timestamp: new Date().toISOString(),
   });
 };
