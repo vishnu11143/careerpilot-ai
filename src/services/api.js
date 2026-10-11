@@ -3,13 +3,14 @@
    HTTP client connecting frontend to backend server.
    ============================================ */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/+$/, '');
 
 /**
  * Standard fetch helper with timeout and JSON parsing.
  */
 async function request(endpoint, options = {}) {
-  const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${API_BASE_URL}${cleanEndpoint}`;
   const timeoutMs = options.timeoutMs || 25000;
 
   const headers = {

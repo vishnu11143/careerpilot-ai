@@ -145,7 +145,7 @@ export default function AIMentorPage() {
         {
           id: `mentor-err-${Date.now()}`,
           sender: 'mentor',
-          text: `I ran into a temporary issue connecting to the AI brain. Please try again!`,
+          text: `⚠️ AI Error: ${err.message || 'Unable to connect to AI mentor'}. Please check your connection or server environment variables.`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         }
       ]);

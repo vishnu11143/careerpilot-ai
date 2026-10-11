@@ -410,7 +410,7 @@ export default function SettingsPage() {
                 <Shield size={14} /> Zero-Exposure Architecture
               </div>
               <p style={{ margin: 0 }}>
-                The Gemini API key is securely loaded on the backend from <code>GEMINI_API_KEY</code>. Client browsers communicate with the local Express server at <code>http://localhost:5000/api/ai</code>, ensuring your credentials are never exposed in browser network requests, bundles, or local storage.
+                The Gemini API key is securely loaded on the backend from <code>GEMINI_API_KEY</code>. Client browsers communicate with the secure serverless backend at <code>/api/ai</code>, ensuring your credentials are never exposed in browser network requests, bundles, or local storage.
               </p>
             </div>
           </Card>

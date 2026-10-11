@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Card, Button, Badge, ProgressRing } from '../../components/ui';
 import { generateInterviewQuestionsAI, evaluateInterviewAnswerAI, hasGeminiApiKey } from '../../services/aiService';
+import toast from 'react-hot-toast';
 import './DashboardPages.css';
 
 const ROLES = ['Full Stack Engineer', 'Frontend Engineer', 'Backend Engineer', 'DevOps / Cloud', 'System Design'];
@@ -61,6 +62,7 @@ export default function MockInterviewPage() {
       setInSession(true);
     } catch (err) {
       console.error('Failed to start interview:', err);
+      toast.error(err.message || 'Failed to generate interview questions.');
     } finally {
       setEvaluating(false);
     }
@@ -76,6 +78,7 @@ export default function MockInterviewPage() {
       setCurrentEvaluation(evalResult);
     } catch (err) {
       console.error('Evaluation failed:', err);
+      toast.error(err.message || 'Failed to evaluate interview answer.');
     } finally {
       setEvaluating(false);
     }

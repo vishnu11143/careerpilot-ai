@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Card, Button, Badge, ProgressRing, Tabs, TabPanel } from '../../components/ui';
 import { analyzeResumeAI, enhanceBulletPointAI, hasGeminiApiKey } from '../../services/aiService';
+import toast from 'react-hot-toast';
 import './DashboardPages.css';
 
 const SAMPLE_RESUME = `Alex Chen
@@ -70,6 +71,7 @@ export default function ResumePage() {
       setAnalysisResult(result);
     } catch (err) {
       console.error('Resume audit error:', err);
+      toast.error(err.message || 'Resume analysis failed. Please check your AI connection.');
     } finally {
       setAnalyzing(false);
     }
@@ -83,6 +85,7 @@ export default function ResumePage() {
       setEnhancedBullets(result?.improved || []);
     } catch (err) {
       console.error('Bullet enhance error:', err);
+      toast.error(err.message || 'Bullet enhancement failed. Please check your AI connection.');
     } finally {
       setEnhancing(false);
     }

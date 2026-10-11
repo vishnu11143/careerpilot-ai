@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Card, Button, Badge, ProgressRing } from '../../components/ui';
 import { generateRoadmapAI, hasGeminiApiKey } from '../../services/aiService';
+import toast from 'react-hot-toast';
 import './DashboardPages.css';
 
 const DEFAULT_ROADMAP = {
@@ -97,6 +98,7 @@ export default function CareerRoadmapPage() {
       setRoadmap(res);
     } catch (err) {
       console.error('Roadmap generate error:', err);
+      toast.error(err.message || 'Failed to generate career progression roadmap.');
     } finally {
       setGenerating(false);
     }
